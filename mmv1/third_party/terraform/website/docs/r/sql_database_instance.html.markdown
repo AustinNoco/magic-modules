@@ -313,6 +313,12 @@ includes an up-to-date reference of supported versions.
 
 * `root_password` - (Optional) Initial root password. Can be updated. Required for MS SQL Server.
 
+* `root_password_wo` - (Optional) Initial root password. Can be updated. Required for MS SQL Server. **Note**: This property is write-only and will not be read from the API.
+
+  ~> **Note:** One of `root_password` or `root_password_wo` can only be set.
+
+* `root_password_wo_version` - Triggers update of `root_password_wo` write-only. Increment this value when an update to `root_password_wo` is needed. For more info see [updating write-only arguments](/docs/providers/google/guides/using_write_only_arguments.html#updating-write-only-arguments)
+
 * `encryption_key_name` - (Optional)
     The full path to the encryption key used for the CMEK disk encryption.  Setting
     up disk encryption currently requires manual steps outside of Terraform.
@@ -328,9 +334,9 @@ includes an up-to-date reference of supported versions.
     or `terraform destroy` that would delete the instance will fail.
     When the field is set to false, deleting the instance is allowed.
 
-* `final_backup_description` - (Optional) The description of final backup. Only set this field when `final_backup_config.enabled` is true.
-
   ~> **NOTE:** This flag only protects instances from deletion within Terraform. To protect your instances from accidental deletion across all surfaces (API, gcloud, Cloud Console and Terraform), use the API flag `settings.deletion_protection_enabled`.
+
+* `final_backup_description` - (Optional) The description of final backup. Only set this field when `final_backup_config.enabled` is true.
 
 * `restore_backup_context` - (optional) The context needed to restore the database to a backup run. This field will
     cause Terraform to trigger the database to restore from the backup run indicated. The configuration is detailed below.
@@ -395,7 +401,7 @@ The `settings` block supports:
 
 * `data_disk_provisioned_throughput` - (Optional, Beta) Provisioned throughput measured in MiB per second for the data disk. This field is only used for `HYPERDISK_BALANCED` disk types.
 
-* `node_count` - For a read pool instance, the number of nodes in the read pool.
+* `node_count` - For a read pool instance, the number of nodes in the read pool. For read pools with auto scaling enabled, this field is read only.
 
 * `pricing_plan` - (Optional) Pricing plan for this instance, can only be `PER_USE`.
 
@@ -450,6 +456,8 @@ The optional `settings.backup_configuration` subblock supports:
     Can only be used with MySQL.
 
 * `enabled` - (Optional) True if backup configuration is enabled.
+
+* `backup_tier` - (Computed) The backup tier that manages the backups for the instance.
 
 * `start_time` - (Optional) `HH:MM` format time indicating when backup
     configuration starts.
@@ -516,6 +524,28 @@ The optional `settings.ip_configuration.psc_config` sublist supports:
 * `network_attachment_uri` - (Optional) Network Attachment URI in the format `projects/project1/regions/region1/networkAttachments/networkAttachment1` to enable outbound connectivity on PSC instance.
 
 * `consumer_service_project_id` - (Optional) The project ID of consumer service project of this consumer endpoint.
+
+The optional `settings.read_pool_auto_scale_config` subblock supports:
+
+* `enabled` - True if Read Pool Auto Scale is enabled.
+
+* `max_node_count` - Maximum number of nodes in the read pool. If set to lower than current node count, node count will be updated.
+
+* `min_node_count` - Minimum number of nodes in the read pool. If set to higher than current node count, node count will be updated.
+
+
+
+* `disable_scale_in` - True if auto scale in is disabled.
+
+* `scale_in_cooldown_seconds` - The cooldown period for scale in operations.
+
+* `scale_out_cooldown_seconds` - The cooldown period for scale out operations.
+
+* `target_metrics` - Target metrics for Read Pool Auto Scale. Must specify `target_metrics.metric` and `target_metrics.target_value` in subblock.
+
+* `metric` - Metric name for Read Pool Auto Scale.
+
+* `target_value` - Target value for Read Pool Auto Scale.
 
 The optional `settings.location_preference` subblock supports:
 
